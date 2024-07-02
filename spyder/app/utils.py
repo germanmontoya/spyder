@@ -32,7 +32,7 @@ from spyder.config.manager import CONF
 from spyder.utils.external.dafsa.dafsa import DAFSA
 from spyder.utils.image_path_manager import get_image_path
 from spyder.utils.installers import running_installer_test
-from spyder.utils.palette import QStylePalette
+from spyder.utils.palette import SpyderPalette
 from spyder.utils.qthelpers import file_uri, qapplication
 
 # For spyder-ide/spyder#7447.
@@ -187,6 +187,15 @@ def qt_message_handler(msg_type, msg_log_context, msg_string):
         # This is shown when expanding/collpasing folders in the Files plugin
         # after spyder-ide/spyder#
         "QFont::setPixelSize: Pixel size <= 0 (0)",
+        # These warnings are shown uncollapsing CollapsibleWidget
+        "QPainter::begin: Paint device returned engine == 0, type: 2",
+        "QPainter::save: Painter not active",
+        "QPainter::setPen: Painter not active",
+        "QPainter::setWorldTransform: Painter not active",
+        "QPainter::setOpacity: Painter not active",
+        "QFont::setPixelSize: Pixel size <= 0 (-3)",
+        "QPainter::setFont: Painter not active",
+        "QPainter::restore: Unbalanced save/restore",
     ]
     if msg_string not in BLACKLIST:
         print(msg_string)  # spyder: test-skip
@@ -264,7 +273,7 @@ def set_links_color(app):
 
     This was taken from QDarkstyle, which is MIT licensed.
     """
-    color = QStylePalette.COLOR_ACCENT_4
+    color = SpyderPalette.COLOR_ACCENT_4
     qcolor = QColor(color)
 
     app_palette = app.palette()
@@ -357,6 +366,14 @@ def create_window(WindowClass, app, splash, options, args):
     main.pre_visible_setup()
     main.show()
     main.post_visible_setup()
+
+    # Add a reference to the main window so it can be accessed from the
+    # application.
+    #
+    # Notes
+    # -----
+    # * **DO NOT** use it to access other plugins functionality through it.
+    app._main_window = main
 
     if main.console:
         main.console.start_interpreter(namespace={})

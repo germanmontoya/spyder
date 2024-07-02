@@ -21,14 +21,37 @@ from urllib.parse import unquote
 
 # Third party imports
 from qtpy.compat import from_qvariant, to_qvariant
-from qtpy.QtCore import (QEvent, QLibraryInfo, QLocale, QObject, Qt, QTimer,
-                         QTranslator, QUrl, Signal, Slot)
+from qtpy.QtCore import (
+    QEvent,
+    QLibraryInfo,
+    QLocale,
+    QObject,
+    QPoint,
+    Qt,
+    QTimer,
+    QTranslator,
+    QUrl,
+    Signal,
+    Slot,
+)
 from qtpy.QtGui import (
     QDesktopServices, QFontMetrics, QKeyEvent, QKeySequence, QPixmap)
-from qtpy.QtWidgets import (QAction, QApplication, QDialog, QHBoxLayout,
-                            QLabel, QLineEdit, QMenu, QPlainTextEdit,
-                            QPushButton, QStyle, QToolButton, QVBoxLayout,
-                            QWidget)
+from qtpy.QtWidgets import (
+    QAction,
+    QApplication,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMenu,
+    QPlainTextEdit,
+    QPushButton,
+    QStyle,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 # Local imports
 from spyder.api.config.fonts import SpyderFontsMixin, SpyderFontType
@@ -39,7 +62,7 @@ from spyder.py3compat import is_text_string, to_text_string
 from spyder.utils.icon_manager import ima
 from spyder.utils import programs
 from spyder.utils.image_path_manager import get_image_path
-from spyder.utils.palette import QStylePalette
+from spyder.utils.palette import SpyderPalette
 from spyder.utils.registries import ACTION_REGISTRY, TOOLBUTTON_REGISTRY
 from spyder.widgets.waitingspinner import QWaitingSpinner
 
@@ -293,7 +316,7 @@ def create_toolbutton(parent, text=None, shortcut=None, icon=None, tip=None,
     return button
 
 
-def create_waitspinner(size=32, n=11, parent=None):
+def create_waitspinner(size=32, n=11, parent=None, name=None):
     """
     Create a wait spinner with the specified size built with n circling dots.
     """
@@ -312,7 +335,9 @@ def create_waitspinner(size=32, n=11, parent=None):
     spinner.setLineLength(dot_size)
     spinner.setLineWidth(dot_size)
     spinner.setInnerRadius(inner_radius)
-    spinner.setColor(QStylePalette.COLOR_TEXT_1)
+    spinner.setColor(SpyderPalette.COLOR_TEXT_1)
+
+    spinner.name = name
 
     return spinner
 
@@ -760,6 +785,9 @@ class SpyderApplication(QApplication, SpyderConfigurationAccessor,
         self._pending_file_open = []
         self._original_handlers = {}
 
+        # This is filled at startup in spyder.app.utils.create_window
+        self._main_window: QMainWindow = None
+
     def event(self, event):
 
         if sys.platform == 'darwin' and event.type() == QEvent.FileOpen:
@@ -790,7 +818,8 @@ class SpyderApplication(QApplication, SpyderConfigurationAccessor,
 
         app_font = self.font()
         app_font.setFamily(family)
-        app_font.setPointSize(size)
+        if size > 0:
+            app_font.setPointSize(size)
 
         self.set_monospace_interface_font(app_font)
         self.setFont(app_font)
@@ -831,6 +860,18 @@ class SpyderApplication(QApplication, SpyderConfigurationAccessor,
                       section='appearance')
         self.set_conf('monospace_app_font/size', monospace_size,
                       section='appearance')
+
+    def get_mainwindow_position(self) -> QPoint:
+        """Get main window position."""
+        return self._main_window.pos()
+
+    def get_mainwindow_width(self) -> int:
+        """Get main window width."""
+        return self._main_window.width()
+
+    def get_mainwindow_height(self) -> int:
+        """Get main window height."""
+        return self._main_window.height()
 
 
 def restore_launchservices():

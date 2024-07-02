@@ -63,10 +63,13 @@ class OutlineExplorer(SpyderDockablePlugin):
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
+        widget = self.get_widget()
         editor = self.get_plugin(Plugins.Editor)
 
         editor.sig_open_files_finished.connect(
             self.update_all_editors)
+        widget.edit_goto.connect(editor.load_edit_goto)
+        widget.edit.connect(editor.load_edit)
 
     @on_plugin_teardown(plugin=Plugins.Completions)
     def on_completions_teardown(self):
@@ -79,10 +82,13 @@ class OutlineExplorer(SpyderDockablePlugin):
 
     @on_plugin_teardown(plugin=Plugins.Editor)
     def on_editor_teardown(self):
+        widget = self.get_widget()
         editor = self.get_plugin(Plugins.Editor)
 
         editor.sig_open_files_finished.disconnect(
             self.update_all_editors)
+        widget.edit_goto.disconnect(editor.load_edit_goto)
+        widget.edit.disconnect(editor.load_edit)
 
     # ----- Private API
     # -------------------------------------------------------------------------
@@ -102,6 +108,15 @@ class OutlineExplorer(SpyderDockablePlugin):
         explorer = self.get_widget()
         if scrollbar_pos is not None:
             explorer.treewidget.set_scrollbar_position(scrollbar_pos)
+
+    def _set_toggle_view_action_state(self):
+        """Set state of the toogle view action."""
+        self.get_widget().blockSignals(True)
+        if self.get_widget().is_visible:
+            self.get_widget().toggle_view_action.setChecked(True)
+        else:
+            self.get_widget().toggle_view_action.setChecked(False)
+        self.get_widget().blockSignals(False)
 
     # ----- Public API
     # -------------------------------------------------------------------------
@@ -126,3 +141,22 @@ class OutlineExplorer(SpyderDockablePlugin):
     def get_supported_languages(self):
         """List of languages with symbols support."""
         return self.get_widget().get_supported_languages()
+
+    def dock_with_maximized_editor(self):
+        """
+        Actions to take when the plugin is docked next to the editor when the
+        latter is maximized.
+        """
+        self.get_widget().in_maximized_editor = True
+        if self.get_conf('show_with_maximized_editor'):
+            self.main.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.dockwidget.show()
+        self._set_toggle_view_action_state()
+
+    def hide_from_maximized_editor(self):
+        """
+        Actions to take when the plugin is hidden after the editor is
+        unmaximized.
+        """
+        self.get_widget().in_maximized_editor = False
+        self._set_toggle_view_action_state()

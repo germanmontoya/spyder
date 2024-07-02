@@ -13,6 +13,7 @@ import logging
 import os
 
 # Third party imports
+from packaging.version import parse
 from qtpy.QtCore import Qt, QByteArray, QSize, QPoint, Slot
 from qtpy.QtGui import QIcon
 from qtpy.QtWidgets import QApplication
@@ -56,12 +57,15 @@ DEFAULT_LAYOUTS = get_class_values(DefaultLayouts)
 # The current versions are:
 #
 # * Spyder 4: Version 0 (it was the default).
-# * Spyder 5.0.0 to 5.0.5: Version 1 (a bump was required due to the new API).
+# * Spyder 5.0.0: Version 1 (a bump was required due to the new API).
 # * Spyder 5.1.0: Version 2 (a bump was required due to the migration of
 #                            Projects to the new API).
-# * Spyder 5.2.0: Version 3 (a bump was required due to the migration of
+# * Spyder 5.2.0: Version 3 (a bump was required due to the migration of the
 #                            IPython Console to the new API)
-WINDOW_STATE_VERSION = 3
+# * Spyder 6.0.0: Version 4 (a bump was required due to the migration of
+#                            Editor to the new API)
+
+WINDOW_STATE_VERSION = 4
 
 
 class Layout(SpyderPluginV2):
@@ -211,6 +215,11 @@ class Layout(SpyderPluginV2):
         # interface.
         self.restore_visible_plugins()
 
+        # This is necessary to correctly display dock tabbars when there's a
+        # change in WINDOW_STATE_VERSION or the previous session was a Spyder 5
+        # one.
+        self._reapply_docktabbar_style()
+
         # Update panes and toolbars lock status
         self.toggle_lock(self._interface_locked)
 
@@ -243,6 +252,33 @@ class Layout(SpyderPluginV2):
             text = _('Lock panes and toolbars')
         self.lock_interface_action.setIcon(icon)
         self.lock_interface_action.setText(text)
+
+    def _reapply_docktabbar_style(self, force=False):
+        """Reapply dock tabbar style."""
+        saved_state_version = self.get_conf(
+            "window_state_version", default=WINDOW_STATE_VERSION
+        )
+
+        # Reapplying style by installing the tab event filter again.
+        if (
+            # Check if the window state version changed. This covers the case
+            # of starting a Spyder 5 session after a Spyder 6 one, but only if
+            # users have 5.5.4 or greater.
+            saved_state_version < WINDOW_STATE_VERSION
+            # The previous session ran a Spyder version older than 6.0.0a5,
+            # which is when this change became necessary (82.2.0 is the conf
+            # version for that release)
+            or parse(self.old_conf_version) < parse("82.2.0")
+            # This is used when switching to a different layout, which also
+            # requires this.
+            or force
+        ):
+            plugins = self.get_dockable_plugins()
+            for plugin in plugins:
+                if plugin.dockwidget.dock_tabbar is not None:
+                    plugin.dockwidget.install_tab_event_filter()
+
+            self.set_conf("window_state_version", WINDOW_STATE_VERSION)
 
     # ---- Helper methods
     # -------------------------------------------------------------------------
@@ -412,6 +448,9 @@ class Layout(SpyderPluginV2):
         ----------
         index_or_layout_id: int or str
         """
+        # We need to do this first so the new layout is applied as expected.
+        self.unmaximize_dockwidget()
+
         section = 'quick_layouts'
         container = self.get_container()
         try:
@@ -459,6 +498,10 @@ class Layout(SpyderPluginV2):
                 # Old API
                 action = plugin._toggle_view_action
             action.setChecked(plugin.dockwidget.isVisible())
+
+        # This is necessary to restore the style for dock tabbars after the
+        # switch
+        self._reapply_docktabbar_style(force=True)
 
         return index_or_layout_id
 
@@ -652,6 +695,12 @@ class Layout(SpyderPluginV2):
         First call: maximize current dockwidget
         Second call (or restore=True): restore original window layout
         """
+        editor = self.get_plugin(Plugins.Editor, error=False)
+        outline_explorer = self.get_plugin(
+            Plugins.OutlineExplorer,
+            error=False
+        )
+
         if self._state_before_maximizing is None:
             if restore:
                 return
@@ -674,14 +723,14 @@ class Layout(SpyderPluginV2):
                     if plugin.isAncestorOf(focus_widget):
                         self._last_plugin = plugin
 
-            # Only plugins that have a dockwidget are part of widgetlist,
-            # so last_plugin can be None after the above "for" cycle.
-            # For example, this happens if, after Spyder has started, focus
-            # is set to the Working directory toolbar (which doesn't have
-            # a dockwidget) and then you press the Maximize button
+            # This prevents a possible error when the value of _last_plugin
+            # turns out to be None.
             if self._last_plugin is None:
-                # Using the Editor as default plugin to maximize
-                self._last_plugin = self.get_plugin(Plugins.Editor)
+                # Use the Editor as default plugin to maximize
+                if editor is not None:
+                    self._last_plugin = editor
+                else:
+                    return
 
             # Maximize last_plugin
             self._last_plugin.dockwidget.toggleViewAction().setDisabled(True)
@@ -706,13 +755,10 @@ class Layout(SpyderPluginV2):
                 self._last_plugin.show()
                 self._last_plugin._visibility_changed(True)
 
-            if self._last_plugin is self.main.editor:
-                # Automatically show the outline if the editor was maximized:
-                outline_explorer = self.get_plugin(Plugins.OutlineExplorer)
-                self.main.addDockWidget(
-                    Qt.RightDockWidgetArea,
-                    outline_explorer.dockwidget)
-                outline_explorer.dockwidget.show()
+            if self._last_plugin is editor:
+                # Automatically show the outline if the editor was maximized
+                if outline_explorer is not None:
+                    outline_explorer.dock_with_maximized_editor()
         else:
             # Restore original layout (before maximizing current dockwidget)
             try:
@@ -722,6 +768,7 @@ class Layout(SpyderPluginV2):
             except AttributeError:
                 # Old API
                 self._last_plugin.dockwidget.setWidget(self._last_plugin)
+
             self._last_plugin.dockwidget.toggleViewAction().setEnabled(True)
             self.main.setCentralWidget(None)
 
@@ -736,6 +783,11 @@ class Layout(SpyderPluginV2):
                 self._state_before_maximizing, version=WINDOW_STATE_VERSION
             )
             self._state_before_maximizing = None
+
+            if self._last_plugin is editor:
+                if outline_explorer is not None:
+                    outline_explorer.hide_from_maximized_editor()
+
             try:
                 # New API
                 self._last_plugin.get_widget().get_focus_widget().setFocus()
@@ -1020,7 +1072,14 @@ class Layout(SpyderPluginV2):
             return False
 
         # Get the actual plugins from their names
-        next_to_plugins = [self.get_plugin(p) for p in next_to_plugins]
+        next_to_plugins = [
+            self.get_plugin(p, error=False) for p in next_to_plugins
+        ]
+
+        # Remove not available plugins from next_to_plugins
+        next_to_plugins = [
+            p for p in next_to_plugins if p is not None
+        ]
 
         if plugin.get_conf('first_time', True):
             # This tabifies external and internal plugins that are loaded for

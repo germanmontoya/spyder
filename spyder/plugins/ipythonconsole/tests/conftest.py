@@ -35,7 +35,6 @@ from spyder.utils.conda import get_list_conda_envs
 # ---- Constants
 # =============================================================================
 SHELL_TIMEOUT = 40000 if os.name == 'nt' else 20000
-TEMP_DIRECTORY = tempfile.gettempdir()
 NEW_DIR = 'new_workingdir'
 PY312_OR_GREATER = sys.version_info[:2] >= (3, 12)
 
@@ -207,6 +206,7 @@ def ipyconsole(qtbot, request, tmpdir):
     debugger.on_ipython_console_available()
     console.on_initialize()
     console._register()
+    console.get_widget().matplotlib_status.register_ipythonconsole(console)
     console.create_new_client(
         special=special,
         given_name=given_name,
@@ -247,8 +247,7 @@ def ipyconsole(qtbot, request, tmpdir):
                 timeout=SHELL_TIMEOUT)
     except Exception:
         # Print content of shellwidget and close window
-        print(console.get_current_shellwidget(
-            )._control.toPlainText())
+        print(console.get_current_shellwidget()._control.toPlainText())
         client = console.get_current_client()
         if client.info_page != client.blank_page:
             print('info_page')
@@ -274,8 +273,7 @@ def ipyconsole(qtbot, request, tmpdir):
     if request.node.rep_setup.passed:
         if request.node.rep_call.failed:
             # Print content of shellwidget and close window
-            print(console.get_current_shellwidget(
-                )._control.toPlainText())
+            print(console.get_current_shellwidget()._control.toPlainText())
             client = console.get_current_client()
             if client.info_page != client.blank_page:
                 print('info_page')
@@ -341,3 +339,23 @@ def ipyconsole(qtbot, request, tmpdir):
         files = [repr(f) for f in proc.open_files()]
         show_diff(init_files, files, "files")
         raise
+
+
+@pytest.fixture
+def mpl_rc_file(tmp_path):
+    """Create matplotlibrc file"""
+    file_contents = """
+figure.dpi: 99
+figure.figsize: 9, 9
+figure.subplot.bottom: 0.9
+font.size: 9
+"""
+    rc_file = str(tmp_path / 'matplotlibrc')
+    with open(rc_file, 'w') as f:
+        f.write(file_contents)
+    os.environ['MATPLOTLIBRC'] = rc_file
+
+    yield
+
+    os.environ.pop('MATPLOTLIBRC')
+    os.remove(rc_file)

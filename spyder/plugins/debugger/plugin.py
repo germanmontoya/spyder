@@ -33,7 +33,7 @@ from spyder.plugins.run.api import (
     RunConfiguration, ExtendedRunExecutionParameters, RunExecutor, run_execute,
     RunContext, RunResult)
 from spyder.plugins.toolbar.api import ApplicationToolbars
-from spyder.plugins.ipythonconsole.widgets.config import IPythonConfigOptions
+from spyder.plugins.ipythonconsole.widgets.run_conf import IPythonConfigOptions
 from spyder.plugins.editor.api.run import CellRun, SelectionRun
 
 
@@ -42,7 +42,7 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
 
     NAME = 'debugger'
     REQUIRES = [Plugins.IPythonConsole, Plugins.Preferences, Plugins.Run]
-    OPTIONAL = [Plugins.Editor, Plugins.MainMenu, Plugins.VariableExplorer]
+    OPTIONAL = [Plugins.Editor, Plugins.MainMenu]
     TABIFY = [Plugins.VariableExplorer, Plugins.Help]
     WIDGET_CLASS = DebuggerWidget
     CONF_SECTION = NAME
@@ -78,46 +78,68 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
 
         self.python_editor_run_configuration = {
             'origin': self.NAME,
-            'extension': ['py', 'ipy'],
+            'extension': 'py',
             'contexts': [
-                {
-                    'name': 'File'
-                },
-                {
-                    'name': 'Cell'
-                },
-                {
-                    'name': 'Selection'
-                },
+                {'name': 'File'},
+                {'name': 'Cell'},
+                {'name': 'Selection'},
+            ]
+        }
+
+        self.ipython_editor_run_configuration = {
+            'origin': self.NAME,
+            'extension': 'ipy',
+            'contexts': [
+                {'name': 'File'},
+                {'name': 'Cell'},
+                {'name': 'Selection'},
             ]
         }
 
         self.executor_configuration = [
             {
-                'input_extension': ['py', 'ipy'],
-                'context': {
-                    'name': 'File'
-                },
+                'input_extension': 'py',
+                'context': {'name': 'File'},
                 'output_formats': [],
                 'configuration_widget': IPythonConfigOptions,
                 'requires_cwd': True,
                 'priority': 10
             },
             {
-                'input_extension': ['py', 'ipy'],
-                'context': {
-                    'name': 'Cell'
-                },
+                'input_extension': 'ipy',
+                'context': {'name': 'File'},
+                'output_formats': [],
+                'configuration_widget': IPythonConfigOptions,
+                'requires_cwd': True,
+                'priority': 10
+            },
+            {
+                'input_extension': 'py',
+                'context': {'name': 'Cell'},
                 'output_formats': [],
                 'configuration_widget': None,
                 'requires_cwd': True,
                 'priority': 10
             },
             {
-                'input_extension': ['py', 'ipy'],
-                'context': {
-                    'name': 'Selection'
-                },
+                'input_extension': 'ipy',
+                'context': {'name': 'Cell'},
+                'output_formats': [],
+                'configuration_widget': None,
+                'requires_cwd': True,
+                'priority': 10
+            },
+            {
+                'input_extension': 'py',
+                'context': {'name': 'Selection'},
+                'output_formats': [],
+                'configuration_widget': None,
+                'requires_cwd': True,
+                'priority': 10
+            },
+            {
+                'input_extension': 'ipy',
+                'context': {'name': 'Selection'},
                 'output_formats': [],
                 'configuration_widget': None,
                 'requires_cwd': True,
@@ -182,7 +204,11 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
     def on_run_teardown(self):
         run = self.get_plugin(Plugins.Run)
         run.deregister_executor_configuration(
-            self, self.executor_configuration)
+            self, self.executor_configuration
+        )
+        run.destroy_run_in_executor_button(RunContext.File, self.NAME)
+        run.destroy_run_in_executor_button(RunContext.Cell, self.NAME)
+        run.destroy_run_in_executor_button(RunContext.Selection, self.NAME)
 
     @on_plugin_available(plugin=Plugins.Preferences)
     def on_preferences_available(self):
@@ -199,8 +225,11 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
         editor = self.get_plugin(Plugins.Editor)
         widget = self.get_widget()
 
-        editor.add_supported_run_configuration(
-            self.python_editor_run_configuration)
+        for run_config in [
+            self.python_editor_run_configuration,
+            self.ipython_editor_run_configuration
+        ]:
+            editor.add_supported_run_configuration(run_config)
 
         # The editor is available, connect signals.
         widget.sig_edit_goto.connect(editor.load)
@@ -216,21 +245,25 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
         ]
         for name in editor_shortcuts:
             action = self.get_action(name)
+            # TODO: This should be handled differently?
             CONF.config_shortcut(
                 action.trigger,
                 context=self.CONF_SECTION,
                 name=name,
-                parent=editor
+                parent=editor.get_widget()
             )
-            editor.pythonfile_dependent_actions += [action]
+            editor.get_widget().pythonfile_dependent_actions += [action]
 
     @on_plugin_teardown(plugin=Plugins.Editor)
     def on_editor_teardown(self):
         editor = self.get_plugin(Plugins.Editor)
         widget = self.get_widget()
 
-        editor.remove_supported_run_configuration(
-            self.python_editor_run_configuration)
+        for run_config in [
+            self.python_editor_run_configuration,
+            self.ipython_editor_run_configuration
+        ]:
+            editor.remove_supported_run_configuration(run_config)
 
         widget.sig_edit_goto.disconnect(editor.load)
 
@@ -246,17 +279,8 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
         ]
         for name in editor_shortcuts:
             action = self.get_action(name)
-            editor.pythonfile_dependent_actions.remove(action)
-
-    @on_plugin_available(plugin=Plugins.VariableExplorer)
-    def on_variable_explorer_available(self):
-        self.get_widget().sig_show_namespace.connect(
-            self._show_namespace_in_variable_explorer)
-
-    @on_plugin_teardown(plugin=Plugins.VariableExplorer)
-    def on_variable_explorer_teardown(self):
-        self.get_widget().sig_show_namespace.disconnect(
-            self._show_namespace_in_variable_explorer)
+            if action in editor.get_widget().pythonfile_dependent_actions:
+                editor.get_widget().pythonfile_dependent_actions.remove(action)
 
     @on_plugin_available(plugin=Plugins.MainMenu)
     def on_main_menu_available(self):
@@ -316,18 +340,6 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
         # Prevent keyboard input from accidentally entering the
         # editor during repeated, rapid entry of debugging commands.
         editor.load(fname, lineno, processevents=False)
-
-    def _show_namespace_in_variable_explorer(self, namespace, shellwidget):
-        """
-        Find the right variable explorer widget and show the namespace.
-
-        This should only be called when there is a Variable explorer
-        """
-        variable_explorer = self.get_plugin(Plugins.VariableExplorer)
-        if variable_explorer is None:
-            return
-        nsb = variable_explorer.get_widget_for_shellwidget(shellwidget)
-        nsb.process_remote_view(namespace)
 
     def _is_python_editor(self, codeeditor):
         """Check if the editor is a python editor."""
@@ -409,12 +421,15 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
         """
         The pdb state has changed.
         """
-        codeeditor = self._get_current_editor()
-        if codeeditor is None or codeeditor.breakpoints_manager is None:
-            return
-        filename, line_number = self.get_widget().get_pdb_last_step()
-        codeeditor.breakpoints_manager.update_pdb_state(
-            pdb_state, filename, line_number)
+        try:
+            codeeditor = self._get_current_editor()
+            if codeeditor is None or codeeditor.breakpoints_manager is None:
+                return
+            filename, line_number = self.get_widget().get_pdb_last_step()
+            codeeditor.breakpoints_manager.update_pdb_state(
+                pdb_state, filename, line_number)
+        except RuntimeError:
+            pass
 
     def _get_current_editor(self):
         """
@@ -430,7 +445,8 @@ class Debugger(SpyderDockablePlugin, ShellConnectPluginMixin, RunExecutor):
         editor = self.get_plugin(Plugins.Editor)
         if editor is None:
             return None
-        return editor._get_editor(filename)
+
+        return editor.get_codeeditor_for_filename(filename)
 
     def _get_current_editorstack(self):
         """

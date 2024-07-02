@@ -1143,14 +1143,16 @@ def test_locals_globals_in_pdb(kernel):
     reason="Doesn't work with pip packages")
 @pytest.mark.skipif(
     sys.version_info[:2] < (3, 9),
-    reason="Too flaky in Python 3.7/8 and doesn't work in older versions")
-@pytest.mark.skipif(sys.platform == 'darwin', reason="Fails on Mac")
+    reason="Too flaky in Python 3.8 and doesn't work in older versions")
 def test_get_interactive_backend(backend):
     """
     Test that we correctly get the interactive backend set in the kernel.
     """
-    cmd = "from spyder_kernels.console import start; start.main()"
+    # This test passes locally but fails on CIs. Don't know why.
+    if sys.platform == "darwin" and backend == "qt" and os.environ.get('CI'):
+        return
 
+    cmd = "from spyder_kernels.console import start; start.main()"
     with setup_kernel(cmd) as client:
         # Set backend
         if backend is not None:
@@ -1270,13 +1272,12 @@ def test_interrupt():
     """
     # Command to start the kernel
     cmd = "from spyder_kernels.console import start; start.main()"
-    import pickle
     with setup_kernel(cmd) as client:
         kernel_comm = CommBase()
 
         # Create new comm and send the highest protocol
         comm = Comm(kernel_comm._comm_name, client)
-        comm.open(data={'pickle_highest_protocol': pickle.HIGHEST_PROTOCOL})
+        comm.open(data={})
         comm._send_channel = client.control_channel
         kernel_comm._register_comm(comm)
 
@@ -1326,13 +1327,12 @@ def test_enter_debug_after_interruption():
     """
     # Command to start the kernel
     cmd = "from spyder_kernels.console import start; start.main()"
-    import pickle
     with setup_kernel(cmd) as client:
         kernel_comm = CommBase()
 
         # Create new comm and send the highest protocol
         comm = Comm(kernel_comm._comm_name, client)
-        comm.open(data={'pickle_highest_protocol': pickle.HIGHEST_PROTOCOL})
+        comm.open(data={})
         comm._send_channel = client.control_channel
         kernel_comm._register_comm(comm)
 
@@ -1387,6 +1387,27 @@ def test_django_settings(kernel):
 
     nsview = repr(kernel.get_namespace_view())
     assert "'settings':" in nsview
+
+
+def test_hard_link_pdb(tmpdir):
+    """
+    Test that breakpoints on a file are recognised even when the path is
+    different.
+    """
+    # Create a file and a hard link
+    d = tmpdir.join("file.py")
+    d.write('def func():\n    bb = "hello"\n')
+    folder = tmpdir.join("folder")
+    os.mkdir(folder)
+    hard_link = folder.join("file.py")
+    os.link(d, hard_link)
+
+    # Make sure both paths point to the same file
+    assert os.path.samefile(d, hard_link)
+
+    # Make sure canonic returns the same path for a single file
+    pdb_obj = SpyderPdb()
+    assert pdb_obj.canonic(str(d)) == pdb_obj.canonic(str(hard_link))
 
 
 if __name__ == "__main__":

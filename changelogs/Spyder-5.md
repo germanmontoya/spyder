@@ -1,5 +1,137 @@
 # History of changes for Spyder 5
 
+## Version 5.5.5 (2024-06-12)
+
+### Important fixes
+
+* Fix to ensure compatibility with `matplotlib` 3.9.0.
+* Fix kernel start when connection file has spaces in its path.
+* Improve compatibility with PySide2.
+* Handle no output/error output when checking for updates on conda installations.
+* Fix installers update validation logic to choose installer executable name to download/use.
+* Update macOS installer workflow to macOS 12 and constraint installer dependencies to prevent errors (`setuptools<70.0.0`, `zipp<3.19`).
+
+### Issues Closed
+
+* [Issue 22158](https://github.com/spyder-ide/spyder/issues/22158) - Release 5.5.5 ([PR 22162](https://github.com/spyder-ide/spyder/pull/22162) by [@dalthviz](https://github.com/dalthviz))
+* [Issue 22054](https://github.com/spyder-ide/spyder/issues/22054) - `local variable 'channel_url' referenced before assignment` error when checking for updates ([PR 22156](https://github.com/spyder-ide/spyder/pull/22156) by [@ccordoba12](https://github.com/ccordoba12))
+* [Issue 22007](https://github.com/spyder-ide/spyder/issues/22007) - TypeError: string indices must be integers, not 'str' ([PR 21997](https://github.com/spyder-ide/spyder/pull/21997) by [@dpizetta](https://github.com/dpizetta))
+* [Issue 22001](https://github.com/spyder-ide/spyder/issues/22001) - Upload when doing a release installers with all the possible names used for the update process ([PR 22041](https://github.com/spyder-ide/spyder/pull/22041) by [@dalthviz](https://github.com/dalthviz))
+* [Issue 21937](https://github.com/spyder-ide/spyder/issues/21937) - Connecting to the kernel never succeeds. ([PR 22028](https://github.com/spyder-ide/spyder/pull/22028) by [@dalthviz](https://github.com/dalthviz))
+
+In this release 5 issues were closed.
+
+### Pull Requests Merged
+
+* [PR 22162](https://github.com/spyder-ide/spyder/pull/22162) - PR: Update core dependencies for 5.5.5 , by [@dalthviz](https://github.com/dalthviz) ([22158](https://github.com/spyder-ide/spyder/issues/22158))
+* [PR 22157](https://github.com/spyder-ide/spyder/pull/22157) - PR: Fix standalone macOS bundle crash, by [@mrclary](https://github.com/mrclary)
+* [PR 22156](https://github.com/spyder-ide/spyder/pull/22156) - PR: Fix error when we can't detect Spyder in `conda list` output (Utils), by [@ccordoba12](https://github.com/ccordoba12) ([22054](https://github.com/spyder-ide/spyder/issues/22054))
+* [PR 22117](https://github.com/spyder-ide/spyder/pull/22117) - PR: Constrain setuptools for macOS standalone installer, by [@mrclary](https://github.com/mrclary)
+* [PR 22102](https://github.com/spyder-ide/spyder/pull/22102) - PR: Update macOS from 11 to 12 in installer workflow, by [@mrclary](https://github.com/mrclary)
+* [PR 22100](https://github.com/spyder-ide/spyder/pull/22100) - PR: Fix detecting Matplotlib backend for its 3.9.0 version (IPython console), by [@mrclary](https://github.com/mrclary)
+* [PR 22041](https://github.com/spyder-ide/spyder/pull/22041) - PR: Add step to upload Windows installer following new naming format on release (CI), by [@dalthviz](https://github.com/dalthviz) ([22001](https://github.com/spyder-ide/spyder/issues/22001))
+* [PR 22028](https://github.com/spyder-ide/spyder/pull/22028) - PR: Quote kernel connection file in conda activation script (IPython Console), by [@dalthviz](https://github.com/dalthviz) ([21937](https://github.com/spyder-ide/spyder/issues/21937))
+* [PR 22024](https://github.com/spyder-ide/spyder/pull/22024) - PR: Fixes to improve compatibility with PySide2, by [@rear1019](https://github.com/rear1019)
+* [PR 21998](https://github.com/spyder-ide/spyder/pull/21998) - PR: Fix macOS check when defining installer name string for download (Installers), by [@dalthviz](https://github.com/dalthviz)
+* [PR 21997](https://github.com/spyder-ide/spyder/pull/21997) - PR: Avoid iterating over non-dict objects if conda responds with errors, by [@dpizetta](https://github.com/dpizetta) ([22007](https://github.com/spyder-ide/spyder/issues/22007))
+
+In this release 11 pull requests were closed.
+
+
+----
+
+
+## Version 5.5.4 (2024-04-09)
+
+### Important fixes
+
+* Update QtAwesome version constraint to `>=1.3.1,<1.4.0` (icon fonts access issues).
+* Fix kernel start in conda envs with spaces in their directory paths.
+* Fix installers update (installers download URL handling).
+* Handle no output when trying to process git data.
+* Update macOS installer notarization tooling (from `altool` to `notarytool`).
+
+### Issues Closed
+
+* [Issue 21960](https://github.com/spyder-ide/spyder/issues/21960) - Non-recognized command message when running code that gives a traceback with a custom interpreter set on Windows (IPython Console)  ([PR 21964](https://github.com/spyder-ide/spyder/pull/21964) by [@dalthviz](https://github.com/dalthviz))
+* [Issue 21951](https://github.com/spyder-ide/spyder/issues/21951) - macOS installer notarization error ([PR 21953](https://github.com/spyder-ide/spyder/pull/21953) by [@mrclary](https://github.com/mrclary))
+* [Issue 21936](https://github.com/spyder-ide/spyder/issues/21936) - Release 5.5.4 ([PR 21942](https://github.com/spyder-ide/spyder/pull/21942) by [@bnavigator](https://github.com/bnavigator))
+* [Issue 21905](https://github.com/spyder-ide/spyder/issues/21905) - 5.5.3 Updater doesn't work ([PR 21910](https://github.com/spyder-ide/spyder/pull/21910) by [@dalthviz](https://github.com/dalthviz))
+* [Issue 21865](https://github.com/spyder-ide/spyder/issues/21865) - TypeError while trying to process git data ([PR 21954](https://github.com/spyder-ide/spyder/pull/21954) by [@ccordoba12](https://github.com/ccordoba12))
+* [Issue 21662](https://github.com/spyder-ide/spyder/issues/21662) - Error reading kernel connection file from a directory with spaces in it ([PR 21947](https://github.com/spyder-ide/spyder/pull/21947) by [@ccordoba12](https://github.com/ccordoba12))
+
+In this release 6 issues were closed.
+
+### Pull Requests Merged
+
+* [PR 21975](https://github.com/spyder-ide/spyder/pull/21975) - PR: Reapply dock tabbar style if previous session was a Spyder 6 one (Layout), by [@ccordoba12](https://github.com/ccordoba12)
+* [PR 21968](https://github.com/spyder-ide/spyder/pull/21968) - PR: Update `pytest` constraint to `<8.0`, by [@dalthviz](https://github.com/dalthviz)
+* [PR 21964](https://github.com/spyder-ide/spyder/pull/21964) - PR: Fix micromamba based kernel env activation (IPython console), by [@dalthviz](https://github.com/dalthviz) ([21960](https://github.com/spyder-ide/spyder/issues/21960))
+* [PR 21954](https://github.com/spyder-ide/spyder/pull/21954) - PR: Prevent error when we don't get git output to update the `VCSStatus` widget (Editor), by [@ccordoba12](https://github.com/ccordoba12) ([21865](https://github.com/spyder-ide/spyder/issues/21865))
+* [PR 21953](https://github.com/spyder-ide/spyder/pull/21953) - PR: Use `notarytool` instead of `altool` (Installers), by [@mrclary](https://github.com/mrclary) ([21951](https://github.com/spyder-ide/spyder/issues/21951))
+* [PR 21947](https://github.com/spyder-ide/spyder/pull/21947) - PR: Fix starting kernels in conda envs placed in directories with spaces (IPython console), by [@ccordoba12](https://github.com/ccordoba12) ([21662](https://github.com/spyder-ide/spyder/issues/21662))
+* [PR 21942](https://github.com/spyder-ide/spyder/pull/21942) - PR: Bump pylint to `>=3.1,4` and python-lsp-server to `>=1.11.0,<1.12.0`, by [@bnavigator](https://github.com/bnavigator) ([21936](https://github.com/spyder-ide/spyder/issues/21936))
+* [PR 21939](https://github.com/spyder-ide/spyder/pull/21939) - PR: Update QtAwesome version constraint to `>=1.3.1,<1.4.0`, by [@dalthviz](https://github.com/dalthviz)
+* [PR 21911](https://github.com/spyder-ide/spyder/pull/21911) - PR: Update `RELEASE` notes regarding sdist/wheel building and update installers section, by [@dalthviz](https://github.com/dalthviz)
+* [PR 21910](https://github.com/spyder-ide/spyder/pull/21910) - PR: Fix validation to use Spyder 5 installer names when needed, by [@dalthviz](https://github.com/dalthviz) ([21905](https://github.com/spyder-ide/spyder/issues/21905))
+
+In this release 10 pull requests were closed.
+
+
+----
+
+
+## Version 5.5.3 (2024-03-17)
+
+### Important fixes
+
+* Fix critical error when starting IPython console kernels on macOS and Linux
+  in conda environments.
+
+### Issues Closed
+
+* [Issue 21892](https://github.com/spyder-ide/spyder/issues/21892) - `PermissionError` when starting IPython console kernels on macOS and Linux
+
+In this release 1 issue was closed.
+
+
+----
+
+
+## Version 5.5.2 (2024-03-13)
+
+### Important fixes
+
+* Activate environment for consoles that run in the same environment as Spyder.
+* Fix IPython kernel hangs when using a different graphic backend than `Inline`.
+* Fix check for updates mechanism when running Spyder from a conda installation.
+
+### Issues Closed
+
+* [Issue 21861](https://github.com/spyder-ide/spyder/issues/21861) - Missing `Checking for updates` message in the status for the Windows and MacOS installers ([PR 21868](https://github.com/spyder-ide/spyder/pull/21868) by [@ccordoba12](https://github.com/ccordoba12))
+* [Issue 21839](https://github.com/spyder-ide/spyder/issues/21839) - Release 5.5.2 ([PR 21842](https://github.com/spyder-ide/spyder/pull/21842) by [@dalthviz](https://github.com/dalthviz))
+* [Issue 21781](https://github.com/spyder-ide/spyder/issues/21781) - Error when trying to update from a conda installation ([PR 21784](https://github.com/spyder-ide/spyder/pull/21784) by [@mrclary](https://github.com/mrclary))
+* [Issue 21749](https://github.com/spyder-ide/spyder/issues/21749) - Crash in IPython console when running Numpy/Scipy code after Spyder is started from the Start menu ([PR 21783](https://github.com/spyder-ide/spyder/pull/21783) by [@mrclary](https://github.com/mrclary))
+* [Issue 21299](https://github.com/spyder-ide/spyder/issues/21299) - IPython kernel hangs when using other graphics backend than "inline" ([PR 21834](https://github.com/spyder-ide/spyder/pull/21834) by [@ccordoba12](https://github.com/ccordoba12))
+
+In this release 5 issues were closed.
+
+### Pull Requests Merged
+
+* [PR 21868](https://github.com/spyder-ide/spyder/pull/21868) - PR: Fix showing update status bar widget in our apps at startup and other fixes to the update process (Application), by [@ccordoba12](https://github.com/ccordoba12) ([21861](https://github.com/spyder-ide/spyder/issues/21861))
+* [PR 21851](https://github.com/spyder-ide/spyder/pull/21851) - PR: Fix visibility of status bar widget that checks for Spyder updates (Application), by [@ccordoba12](https://github.com/ccordoba12)
+* [PR 21843](https://github.com/spyder-ide/spyder/pull/21843) - PR: Add `condabin` directory, relative to `sys.executable` and provided `pyexec`, to paths searched for conda executable, by [@mrclary](https://github.com/mrclary)
+* [PR 21842](https://github.com/spyder-ide/spyder/pull/21842) - PR: Update core dependencies for 5.5.2 , by [@dalthviz](https://github.com/dalthviz) ([21839](https://github.com/spyder-ide/spyder/issues/21839))
+* [PR 21834](https://github.com/spyder-ide/spyder/pull/21834) - PR: Fix hangs when using Matplotlib interactive backends (IPython console), by [@ccordoba12](https://github.com/ccordoba12) ([21299](https://github.com/spyder-ide/spyder/issues/21299))
+* [PR 21784](https://github.com/spyder-ide/spyder/pull/21784) - PR: Do not use version in macOS artifact name and fix names for the future Spyder 6 installers (Installers), by [@mrclary](https://github.com/mrclary) ([21781](https://github.com/spyder-ide/spyder/issues/21781))
+* [PR 21783](https://github.com/spyder-ide/spyder/pull/21783) - PR: Always activate a conda environment for IPython consoles, by [@mrclary](https://github.com/mrclary) ([21749](https://github.com/spyder-ide/spyder/issues/21749))
+
+In this release 7 pull requests were closed.
+
+
+----
+
+
 ## Version 5.5.1 (2024-02-07)
 
 ### New features

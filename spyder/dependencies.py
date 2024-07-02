@@ -34,7 +34,9 @@ PLUGIN = 'spyder plugins'
 # Versions
 # =============================================================================
 # Hard dependencies
+AIOHTTP_REQVER = '>=3.9.3'
 APPLAUNCHSERVICES_REQVER = '>=0.3.0'
+ASYNCSSH_REQVER = '>=2.0.0,<3.0.0'
 ATOMICWRITES_REQVER = '>=1.2.0'
 CHARDET_REQVER = '>=2.0.0'
 CLOUDPICKLE_REQVER = '>=0.5.0'
@@ -53,10 +55,11 @@ PARSO_REQVER = '>=0.7.0,<0.9.0'
 PEXPECT_REQVER = '>=4.4.0'
 PICKLESHARE_REQVER = '>=0.4'
 PSUTIL_REQVER = '>=5.3'
+PYGITHUB_REQVER = '>=2.3.0'
 PYGMENTS_REQVER = '>=2.0'
-PYLINT_REQVER = '>=2.5.0,<3.1'
+PYLINT_REQVER = '>=3.1,<4'
 PYLINT_VENV_REQVER = '>=3.0.2'
-PYLSP_REQVER = '>=1.10.0,<1.11.0'
+PYLSP_REQVER = '>=1.11.0,<1.12.0'
 PYLSP_BLACK_REQVER = '>=2.0.0,<3.0.0'
 PYLS_SPYDER_REQVER = '>=0.4.0'
 PYUCA_REQVER = '>=1.2'
@@ -64,17 +67,18 @@ PYXDG_REQVER = '>=0.26'
 PYZMQ_REQVER = '>=24.0.0'
 QDARKSTYLE_REQVER = '>=3.2.0,<3.3.0'
 QSTYLIZER_REQVER = '>=0.2.2'
-QTAWESOME_REQVER = '>=1.3.0'
+QTAWESOME_REQVER = '>=1.3.1,<1.4.0'
 QTCONSOLE_REQVER = '>=5.5.1,<5.6.0'
 QTPY_REQVER = '>=2.4.0'
 RTREE_REQVER = '>=0.9.7'
 SETUPTOOLS_REQVER = '>=49.6.0'
 SPHINX_REQVER = '>=0.6.6'
-SPYDER_KERNELS_REQVER = '>=3.0.0b4,<3.0.0b5'
-SUPERQT_REQVER = '>=0.6.1,<1.0.0'
+SPYDER_KERNELS_REQVER = '>=3.0.0b7,<3.0.0b8'
+SUPERQT_REQVER = '>=0.6.2,<1.0.0'
 TEXTDISTANCE_REQVER = '>=4.2.0'
 THREE_MERGE_REQVER = '>=0.1.1'
 WATCHDOG_REQVER = '>=0.10.3'
+YARL_REQVER = '>=1.9.4'
 
 # Optional dependencies
 CYTHON_REQVER = '>=0.21'
@@ -93,11 +97,19 @@ SYMPY_REQVER = '>=0.7.3'
 # =============================================================================
 # List of descriptions
 DESCRIPTIONS = [
+    {'modname': 'aiohttp',
+     'package_name': 'aiohttp',
+     'features': _('Async http client/server'),
+     'required_version': AIOHTTP_REQVER},
     {'modname': "applaunchservices",
      'package_name': "applaunchservices",
      'features': _("Notify macOS that Spyder can open Python files"),
      'required_version': APPLAUNCHSERVICES_REQVER,
      'display': sys.platform == "darwin" and not is_conda_based_app()},
+    {'modname': 'asyncssh',
+     'package_name': 'asyncssh',
+     'features': _('Connect to remote kernels through SSH'),
+     'required_version': ASYNCSSH_REQVER},
     {'modname': "atomicwrites",
      'package_name': "atomicwrites",
      'features': _("Atomic file writes in the Editor"),
@@ -173,6 +185,10 @@ DESCRIPTIONS = [
      'package_name': "psutil",
      'features': _("CPU and memory usage info in the status bar"),
      'required_version': PSUTIL_REQVER},
+    {'modname': "github",
+     'package_name': "pygithub",
+     'features': _("Python API for Github REST API"),
+     'required_version': PYGITHUB_REQVER},
     {'modname': "pygments",
      'package_name': "pygments",
      'features': _("Syntax highlighting for a lot of file types in the Editor"),
@@ -264,6 +280,10 @@ DESCRIPTIONS = [
      'package_name': "watchdog",
      'features': _("Watch file changes on project directories"),
      'required_version': WATCHDOG_REQVER},
+     {'modname': "yarl",
+     'package_name': "yarl",
+     'features': _("URL parsing and changing"),
+     'required_version': YARL_REQVER},
 ]
 
 

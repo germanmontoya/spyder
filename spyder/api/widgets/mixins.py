@@ -268,10 +268,12 @@ class SpyderMenuMixin:
     def _create_menu(
         self,
         menu_id: str,
+        parent: Optional[QWidget] = None,
         title: Optional[str] = None,
         icon: Optional[QIcon] = None,
         reposition: Optional[bool] = True,
         register: bool = True,
+        min_width: Optional[int] = None,
         MenuClass=SpyderMenu
     ) -> SpyderMenu:
         """
@@ -279,9 +281,9 @@ class SpyderMenuMixin:
 
         Notes
         -----
-        * This method should only be used directly to generate a menu that is a
+        * This method must only be used directly to generate a menu that is a
           subclass of SpyderMenu.
-        * Refer to the documentation for `create_menu` to learn about its args.
+        * Refer to the documentation for `SpyderMenu` to learn about its args.
         """
         if register:
             menus = getattr(self, '_menus', None)
@@ -294,9 +296,10 @@ class SpyderMenuMixin:
                 )
 
         menu = MenuClass(
-            parent=self,
+            parent=self if parent is None else parent,
             menu_id=menu_id,
             title=title,
+            min_width=min_width,
             reposition=reposition
         )
 
@@ -437,7 +440,8 @@ class SpyderActionMixin:
     # other it refers to a section of the configuration (or the widget
     # name where it is applied).
     def create_action(self, name, text, icon=None, icon_text='', tip=None,
-                      toggled=None, triggered=None, shortcut_context=None,
+                      toggled=None, triggered=None, data=None,
+                      shortcut_context=None,
                       context=Qt.WidgetWithChildrenShortcut, initial=None,
                       register_shortcut=False, section=None, option=None,
                       parent=None, register_action=True, overwrite=False,
@@ -461,6 +465,8 @@ class SpyderActionMixin:
             behave like a checkbox.
         triggered: callable
             The callable to use when triggering this action.
+        data: Any
+            Data to be set on the action.
         shortcut_context: str
             Set the `str` context of the shortcut.
         context: Qt.ShortcutContext
@@ -528,6 +534,7 @@ class SpyderActionMixin:
             tip=tip,
             toggled=toggled,
             triggered=triggered,
+            data=data,
             context=context,
             section=section,
             option=option,

@@ -1,5 +1,52 @@
 # History of changes
 
+## Version 3.0.0b7 (2024-06-18)
+
+### Issues Closed
+
+* [Issue 491](https://github.com/spyder-ide/spyder-kernels/issues/491) - Debugger misses breakpoint when a file can have several canonic paths ([PR 490](https://github.com/spyder-ide/spyder-kernels/pull/490) by [@impact27](https://github.com/impact27))
+* [Issue 468](https://github.com/spyder-ide/spyder-kernels/issues/468) - Debugger not working for environments with different Python versions ([PR 492](https://github.com/spyder-ide/spyder-kernels/pull/492) by [@impact27](https://github.com/impact27))
+
+In this release 2 issues were closed.
+
+### Pull Requests Merged
+
+* [PR 492](https://github.com/spyder-ide/spyder-kernels/pull/492) - PR: Enable comms to work across different Python versions, by [@impact27](https://github.com/impact27) ([468](https://github.com/spyder-ide/spyder-kernels/issues/468))
+* [PR 490](https://github.com/spyder-ide/spyder-kernels/pull/490) - PR: Use inodes for single canonic file path (Debugger), by [@impact27](https://github.com/impact27) ([491](https://github.com/spyder-ide/spyder-kernels/issues/491))
+* [PR 487](https://github.com/spyder-ide/spyder-kernels/pull/487) - PR: Fix issue where Spyder's inline graphics preferences were not applied, by [@mrclary](https://github.com/mrclary)
+
+In this release 3 pull requests were closed.
+
+----
+
+## Version 3.0.0b6 (2024-05-15)
+
+### Issues Closed
+
+* [Issue 457](https://github.com/spyder-ide/spyder-kernels/issues/457) - Detecting the interactive backend started to fail on Mac in master ([PR 486](https://github.com/spyder-ide/spyder-kernels/pull/486) by [@ccordoba12](https://github.com/ccordoba12))
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 486](https://github.com/spyder-ide/spyder-kernels/pull/486) - PR: Run `test_get_interactive_backend` again on Mac, by [@ccordoba12](https://github.com/ccordoba12) ([457](https://github.com/spyder-ide/spyder-kernels/issues/457))
+* [PR 485](https://github.com/spyder-ide/spyder-kernels/pull/485) - PR: Fix Matplotlib interactive backend detection, by [@ccordoba12](https://github.com/ccordoba12)
+
+In this release 2 pull requests were closed.
+
+----
+
+## Version 3.0.0b5 (2024-04-23)
+
+### Pull Requests Merged
+
+* [PR 481](https://github.com/spyder-ide/spyder-kernels/pull/481) - PR: Allow magic to edit locals while debugging, by [@impact27](https://github.com/impact27)
+* [PR 480](https://github.com/spyder-ide/spyder-kernels/pull/480) - PR: Save faulthandler files under `xdg_data_home/spyder` on Linux, by [@ccordoba12](https://github.com/ccordoba12)
+
+In this release 2 pull requests were closed.
+
+----
+
 ## Version 3.0.0b4 (2024-02-08)
 
 ### Pull Requests Merged
@@ -8,9 +55,7 @@
 
 In this release 1 pull request was closed.
 
-
 ----
-
 
 ## Version 3.0.0b3 (2023-12-18)
 
@@ -22,9 +67,7 @@ In this release 1 pull request was closed.
 
 In this release 3 pull requests were closed.
 
-
 ----
-
 
 ## Version 3.0.0b2 (2023-08-22)
 
@@ -39,9 +82,7 @@ In this release 3 pull requests were closed.
 
 In this release 6 pull requests were closed.
 
-
 ----
-
 
 ## Version 3.0.0b1 (2023-06-14)
 
@@ -82,9 +123,27 @@ In this release 2 issues were closed.
 
 In this release 25 pull requests were closed.
 
+----
+
+## Version 2.5.2 (2024-06-11)
+
+### Pull Requests Merged
+
+* [PR 489](https://github.com/spyder-ide/spyder-kernels/pull/489) - PR: Fix detecting Matplotlib backend for its 3.9.0 version, by [@mrclary](https://github.com/mrclary)
+
+In this release 1 pull request was closed.
 
 ----
 
+## Version 2.5.1 (2024-02-28)
+
+### Pull Requests Merged
+
+* [PR 479](https://github.com/spyder-ide/spyder-kernels/pull/479) - PR: Fix hangs with Maplotlib interactive backends, by [@ccordoba12](https://github.com/ccordoba12)
+
+In this release 1 pull request was closed.
+
+----
 
 ## Version 2.5.0 (2023-11-06)
 
@@ -105,9 +164,7 @@ In this release 25 pull requests were closed.
 
 In this release 6 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.4.4 (2023-06-29)
 
@@ -126,9 +183,7 @@ In this release 1 issue was closed.
 
 In this release 4 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.4.3 (2023-04-02)
 
@@ -150,9 +205,7 @@ In this release 1 issue was closed.
 
 In this release 7 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.4.2 (2023-01-17)
 
@@ -169,9 +222,7 @@ In this release 1 issue was closed.
 
 In this release 2 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.4.1 (2022-12-29)
 
@@ -187,9 +238,7 @@ In this release 1 issue was closed.
 
 In this release 1 pull request was closed.
 
-
 ----
-
 
 ## Version 2.4.0 (2022-11-02)
 
@@ -211,9 +260,7 @@ In this release 1 pull request was closed.
 
 In this release 8 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.3.3 (2022-08-28)
 
@@ -230,9 +277,7 @@ In this release 1 issue was closed.
 
 In this release 2 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.3.2 (2022-07-06)
 
@@ -255,9 +300,7 @@ In this release 1 issue was closed.
 
 In this release 8 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.3.1 (2022-05-21)
 
@@ -269,9 +312,7 @@ In this release 8 pull requests were closed.
 
 In this release 3 pull requests were closed.
 
-
 ---
-
 
 ## Version 2.3.0 (2022-03-30)
 
@@ -304,9 +345,7 @@ In this release 4 issues were closed.
 
 In this release 10 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.2.1 (2022-01-13)
 
@@ -340,9 +379,7 @@ In this release 4 issues were closed.
 
 In this release 16 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.2.0 (2021-11-22)
 
@@ -375,9 +412,7 @@ In this release 3 issues were closed.
 
 In this release 10 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.1.3 (2021-10-02)
 
@@ -387,9 +422,7 @@ In this release 10 pull requests were closed.
 
 In this release 1 pull request was closed.
 
-
 ----
-
 
 ## Version 2.1.2 (2021-09-28)
 
@@ -400,9 +433,7 @@ In this release 1 pull request was closed.
 
 In this release 2 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.1.1 (2021-09-01)
 
@@ -415,9 +446,7 @@ In this release 2 pull requests were closed.
 
 In this release 4 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.1.0 (2021-07-31)
 
@@ -443,9 +472,7 @@ In this release 1 issue was closed.
 
 In this release 5 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.0.5 (2021-07-03)
 
@@ -455,9 +482,7 @@ In this release 5 pull requests were closed.
 
 In this release 1 pull request was closed.
 
-
 ----
-
 
 ## Version 2.0.4 (2021-06-10)
 
@@ -479,9 +504,7 @@ In this release 1 issue was closed.
 
 In this release 7 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.0.3 (2021-05-15)
 
@@ -491,9 +514,7 @@ In this release 7 pull requests were closed.
 
 In this release 1 pull request was closed.
 
-
 ----
-
 
 ## Version 2.0.2 (2021-05-02)
 
@@ -505,17 +526,13 @@ In this release 1 pull request was closed.
 
 In this release 3 pull requests were closed.
 
-
 ----
-
 
 ## Version 2.0.1 (2021-04-02)
 
 * This release also contains all fixes present in version 1.10.3
 
-
 ----
-
 
 ## Version 2.0.0 (2021-04-01)
 
@@ -530,9 +547,7 @@ In this release 3 pull requests were closed.
 
 In this release 2 pull requests were closed.
 
-
 ----
-
 
 ## Version 1.10.3 (2021-04-02)
 
@@ -542,9 +557,7 @@ In this release 2 pull requests were closed.
 
 In this release 1 pull request was closed.
 
-
 ----
-
 
 ## Version 1.10.2 (2021-02-21)
 
@@ -558,9 +571,7 @@ In this release 1 pull request was closed.
 
 In this release 5 pull requests were closed.
 
-
 ----
-
 
 ## Version 1.10.1 (2020-12-18)
 
@@ -585,9 +596,7 @@ In this release 2 issues were closed.
 
 In this release 9 pull requests were closed.
 
-
 ----
-
 
 ## Version 1.10.0 (2020-11-08)
 

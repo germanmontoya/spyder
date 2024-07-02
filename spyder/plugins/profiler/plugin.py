@@ -75,10 +75,16 @@ class Profiler(SpyderDockablePlugin, RunExecutor):
 
         self.executor_configuration = [
             {
-                'input_extension': ['py', 'ipy'],
-                'context': {
-                    'name': 'File'
-                },
+                'input_extension': 'py',
+                'context': {'name': 'File'},
+                'output_formats': [],
+                'configuration_widget': ProfilerPyConfigurationGroup,
+                'requires_cwd': True,
+                'priority': 3
+            },
+            {
+                'input_extension': 'ipy',
+                'context': {'name': 'File'},
                 'output_formats': [],
                 'configuration_widget': ProfilerPyConfigurationGroup,
                 'requires_cwd': True,

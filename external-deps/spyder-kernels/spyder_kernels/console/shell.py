@@ -26,6 +26,7 @@ from ipykernel.zmqshell import ZMQInteractiveShell
 from spyder_kernels.customize.namespace_manager import NamespaceManager
 from spyder_kernels.customize.spyderpdb import SpyderPdb
 from spyder_kernels.customize.code_runner import SpyderCodeRunner
+from spyder_kernels.comms.commbase import stacksummary_to_json
 from spyder_kernels.comms.decorators import comm_handler
 from spyder_kernels.utils.mpl import automatic_backend
 
@@ -87,7 +88,23 @@ class SpyderShell(ZMQInteractiveShell):
         """Enable matplotlib."""
         if gui is None or gui.lower() == "auto":
             gui = automatic_backend()
-        gui, backend = super(SpyderShell, self).enable_matplotlib(gui)
+
+        # Before activating the backend, restore to file default those
+        # InlineBackend settings that may have been set explicitly.
+        self.kernel.restore_rc_file_defaults()
+
+        enabled_gui, backend = super().enable_matplotlib(gui)
+
+        # This is necessary for IPython 8.24+, which returns None after
+        # enabling the Inline backend.
+        if enabled_gui is None and gui == "inline":
+            enabled_gui = "inline"
+        gui = enabled_gui
+
+        # To easily track the current interactive backend
+        if self.kernel.interactive_backend is None:
+            self.kernel.interactive_backend = gui if gui != "inline" else None
+
         if self.update_gui_frontend:
             try:
                 self.kernel.frontend_call(
@@ -95,6 +112,7 @@ class SpyderShell(ZMQInteractiveShell):
                 ).update_matplotlib_gui(gui)
             except Exception:
                 pass
+
         return gui, backend
 
     # --- For Pdb namespace integration
@@ -258,7 +276,9 @@ class SpyderShell(ZMQInteractiveShell):
         if not exception_only:
             try:
                 etype, value, tb = self._get_exc_info(exc_tuple)
-                stack = traceback.extract_tb(tb.tb_next)
+                etype = etype.__name__
+                value = value.args
+                stack = stacksummary_to_json(traceback.extract_tb(tb.tb_next))
                 self.kernel.frontend_call(blocking=False).show_traceback(
                     etype, value, stack)
             except Exception:

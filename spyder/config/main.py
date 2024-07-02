@@ -149,7 +149,7 @@ DEFAULTS = [
               'pylab/autoload': False,
               'pylab/backend': 'inline',
               'pylab/inline/figure_format': 'png',
-              'pylab/inline/resolution': 72,
+              'pylab/inline/resolution': 144,
               'pylab/inline/width': 6,
               'pylab/inline/height': 4,
               'pylab/inline/fontsize': 10.0,
@@ -209,7 +209,6 @@ DEFAULTS = [
              {
               'mute_inline_plotting': True,
               'show_plot_outline': False,
-              'auto_fit_plotting': True
              }),
             ('editor',
              {
@@ -259,6 +258,7 @@ DEFAULTS = [
               'autosave_interval': 60,
               'docstring_type': 'Numpydoc',
               'strip_trailing_spaces_on_modify': False,
+              'show_outline_in_editor_window': True,
               }),
             ('historylog',
              {
@@ -297,7 +297,8 @@ DEFAULTS = [
               'sort_files_alphabetically': False,
               'show_comments': True,
               'follow_cursor': True,
-              'display_variables': False
+              'display_variables': False,
+              'show_with_maximized_editor': True,
               }),
             ('preferences',
              {
@@ -545,11 +546,12 @@ DEFAULTS = [
               'plots/previous figure': 'Ctrl+PgUp',
               'plots/next figure': 'Ctrl+PgDown',
               'plots/save': 'Ctrl+S',
-              'plots/save all': 'Ctrl+Alt+S',
+              'plots/save all': 'Alt+Shift+S',
               'plots/close': 'Ctrl+W',
-              'plots/close all': 'Ctrl+Shift+W',
+              'plots/close all': 'Alt+Shift+W',
               'plots/zoom in': "Ctrl++",
               'plots/zoom out': "Ctrl+-",
+              'plots/auto fit': "Ctrl+0",
               # -- Files --
               'explorer/copy file': 'Ctrl+C',
               'explorer/paste file': 'Ctrl+V',
@@ -641,7 +643,6 @@ NAME_MAP = {
         ('run', [
             'breakpoints',
             'configurations',
-            'defaultconfiguration',
             'default/wdir/fixed_directory',
             'last_used_parameters',
             'parameters'
@@ -670,4 +671,4 @@ NAME_MAP = {
 #    or if you want to *rename* options, then you need to do a MAJOR update in
 #    version, e.g. from 3.0.0 to 4.0.0
 # 3. You don't need to touch this value if you're just adding a new option
-CONF_VERSION = '82.1.0'
+CONF_VERSION = '83.0.0'
