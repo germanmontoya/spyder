@@ -560,7 +560,7 @@ class FindInFilesWidget(PluginMainWidget):
     def _stop_and_reset_thread(self, ignore_results=False):
         """Stop current search thread and clean-up."""
         if self.search_thread is not None:
-            if self.search_thread.isRunning():
+            if self.search_thread.is_running():
                 if ignore_results:
                     self.search_thread.sig_finished.disconnect(
                         self._handle_search_complete)
@@ -707,7 +707,7 @@ class FindInFilesWidget(PluginMainWidget):
         )
         self.result_browser.clear_title(search_text)
         self.search_thread.initialize(*self._get_options())
-        self.search_thread.start()
+        self.search_thread.run()
         self.update_actions()
 
     def add_external_path(self, path):

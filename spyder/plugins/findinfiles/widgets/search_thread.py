@@ -14,13 +14,16 @@ import stat
 import traceback
 
 # Third party imports
-from qtpy.QtCore import QMutex, QMutexLocker, QThread, Signal
+from qtpy.QtCore import QMutex, QMutexLocker, Signal, QObject
 
 # Local imports
 from spyder.api.translations import _
 from spyder.config.utils import EDIT_EXTENSIONS
+from spyder.plugins.findinfiles.widgets.utils import process_ripgrep_output
 from spyder.utils.encoding import is_text_file
 from spyder.utils.palette import SpyderPalette
+from spyder.utils.programs import find_program
+from spyder.utils.workers import WorkerManager
 
 
 # ---- Constants
@@ -32,7 +35,7 @@ MAX_NUM_CHAR_FRAGMENT = 40
 
 # ---- Thread
 # ----------------------------------------------------------------------------
-class SearchThread(QThread):
+class SearchThread(QObject):
     """Find in files search thread."""
     PYTHON_EXTENSIONS = ['.py', '.pyw', '.pyx', '.ipy', '.pyi', '.pyt']
 
@@ -80,6 +83,9 @@ class SearchThread(QThread):
         self.files = []
         self.partial_results = []
         self.total_items = 0
+        # Ripgrep finding
+        self._ripgrep = find_program('rg')
+        self._worker_manager = WorkerManager(self)
 
     def initialize(self, path, is_file, exclude,
                    texts, text_re, case_sensitive):
@@ -99,7 +105,12 @@ class SearchThread(QThread):
             if self.is_file:
                 self.find_string_in_file(self.rootpath)
             else:
-                self.find_files_in_path(self.rootpath)
+                # Worker creation and ripgrep calling
+                self.worker = self._worker_manager.create_process_worker(
+                    [self._ripgrep, self.search_text,"-i", "--json"],
+                )
+                self.worker.sig_finished.connect(self.process_results)
+                self.worker.start()
         except Exception:
             # Important note: we have to handle unexpected exceptions by
             # ourselves because they won't be catched by the main thread
@@ -112,6 +123,9 @@ class SearchThread(QThread):
     def stop(self):
         with QMutexLocker(self.mutex):
             self.stopped = True
+
+    def wait(self):
+        pass
 
     def find_files_in_path(self, path):
         if self.pathlist is None:
@@ -284,7 +298,7 @@ class SearchThread(QThread):
 
         self.completed = True
 
-    def process_results(self):
+    def process_results(self, worker, output, error):
         """
         Process all matches found inside a file.
 
@@ -296,38 +310,50 @@ class SearchThread(QThread):
 
         Creates the title based on the last entry of the lines batch.
         """
-        items = []
-        num_matches = self.total_matches
-        for result in self.partial_results:
-            if self.total_items < self.max_results:
-                filename, lineno, colno, match_end, line = result
-
-                if filename not in self.files:
-                    self.files.append(filename)
-                    self.sig_file_match.emit(filename)
-                    self.num_files += 1
-
-                line = self.truncate_result(line, colno, match_end)
-                item = (filename, lineno, colno, line, match_end)
-                items.append(item)
-                self.total_items += 1
-
-        # Process title
-        title = "'%s' - " % self.search_text
-        nb_files = self.num_files
-        if nb_files == 0:
-            text = _('String not found')
+        if output is None or error:
+            return print('No matches were found!')
         else:
-            text_matches = _('matches in')
-            text_files = _('file')
-            if nb_files > 1:
-                text_files += 's'
-            text = "%d %s %d %s" % (num_matches, text_matches,
-                                    nb_files, text_files)
-        title = title + text
+            result=output.decode("utf-8")
+            # Ripgrep function calling
+            list_of_matches = process_ripgrep_output(result)
+            items = []
+            num_matches = len(list_of_matches)
+            for each_list_of_matches in list_of_matches:
+                filename = each_list_of_matches['path']
+                lineno = each_list_of_matches['row']
+                colno = each_list_of_matches['column'] - len(self.search_text) - 2
+                line = each_list_of_matches['line']
+                match_end = colno + len(self.search_text)
+                self.partial_results.append((filename,
+                                             lineno,
+                                             colno,
+                                             match_end,
+                                             line))
+                if self.total_items < self.max_results:
+                    if filename not in self.files:
+                        self.files.append(filename)
+                        self.sig_file_match.emit(filename)
+                        self.num_files += 1
+                    line = self.truncate_result(line, colno, match_end)
+                    item = (filename, lineno, colno, line, match_end)
+                    items.append(item)
+                    self.total_items += 1
+            # Process title
+            title = "'%s' - " % self.search_text
+            nb_files = self.num_files
+            if nb_files == 0:
+                text = _('String not found')
+            else:
+                text_matches = _('matches in')
+                text_files = _('file')
+                if nb_files > 1:
+                    text_files += 's'
+                text = "%d %s %d %s" % (num_matches, text_matches,
+                                        nb_files, text_files)
+            title = title + text
 
-        self.partial_results = []
-        self.sig_line_match.emit(items, title)
+            self.partial_results = []
+            self.sig_line_match.emit(items, title)
 
     def truncate_result(self, line, start, end):
         """
@@ -405,3 +431,6 @@ class SearchThread(QThread):
 
     def get_results(self):
         return self.results, self.pathlist, self.total_matches, self.error_flag
+
+    def is_running(self):
+        return not self.worker.is_finished()
