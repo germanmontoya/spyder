@@ -19,7 +19,7 @@ from qtpy.QtWidgets import (QApplication, QStyle, QStyledItemDelegate,
 # Local imports
 from spyder.api.config.fonts import SpyderFontsMixin, SpyderFontType
 from spyder.api.translations import _
-from spyder.plugins.findinfiles.widgets.search_thread import (
+from spyder.plugins.findinfiles.widgets.search_worker import (
     ELLIPSIS, MAX_RESULT_LENGTH)
 from spyder.utils import icon_manager as ima
 from spyder.utils.palette import SpyderPalette

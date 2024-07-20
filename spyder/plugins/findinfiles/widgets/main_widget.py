@@ -24,7 +24,7 @@ from spyder.plugins.findinfiles.widgets.results_browser import (
     ON, ResultsBrowser)
 from spyder.plugins.findinfiles.widgets.combobox import (
     MAX_PATH_HISTORY, SearchInComboBox)
-from spyder.plugins.findinfiles.widgets.search_thread import SearchThread
+from spyder.plugins.findinfiles.widgets.search_worker import SearchWorker
 from spyder.utils.misc import regexp_error_msg
 from spyder.utils.palette import SpyderPalette, SpyderPalette
 from spyder.utils.stylesheet import AppStyle
@@ -138,7 +138,7 @@ class FindInFilesWidget(PluginMainWidget):
         # Attributes
         self.text_color = self.get_conf('text_color')
         self.supported_encodings = self.get_conf('supported_encodings')
-        self.search_thread = None
+        self.search_worker = None
         self.running = False
         self.more_options_action = None
         self.extras_toolbar = None
@@ -240,7 +240,7 @@ class FindInFilesWidget(PluginMainWidget):
         self.result_browser.sig_max_results_reached.connect(
             self.sig_max_results_reached)
         self.result_browser.sig_max_results_reached.connect(
-            self._stop_and_reset_thread)
+            self._stop_and_reset_worker)
 
     # ---- PluginMainWidget API
     # ------------------------------------------------------------------------
@@ -541,35 +541,35 @@ class FindInFilesWidget(PluginMainWidget):
 
     def _handle_search_complete(self, completed):
         """
-        Current search thread has finished.
+        Current search worker has finished.
         """
         self.result_browser.set_sorting(ON)
         self.result_browser.set_width()
         self.result_browser.expandAll()
-        if self.search_thread is None:
+        if self.search_worker is None:
             return
 
         self.sig_finished.emit()
-        found = self.search_thread.get_results()
-        self._stop_and_reset_thread()
+        found = self.search_worker.get_results()
+        self._stop_and_reset_worker()
         if found is not None:
             self.result_browser.show()
 
         self.stop_spinner()
         self.update_actions()
 
-    def _stop_and_reset_thread(self, ignore_results=False):
-        """Stop current search thread and clean-up."""
-        if self.search_thread is not None:
-            if self.search_thread.is_running():
+    def _stop_and_reset_worker(self, ignore_results=False):
+        """Stop current search worker and clean-up."""
+        if self.search_worker is not None:
+            if self.search_worker.is_running():
                 if ignore_results:
-                    self.search_thread.sig_finished.disconnect(
+                    self.search_worker.sig_finished.disconnect(
                         self._handle_search_complete)
-                self.search_thread.stop()
-                self.search_thread.wait()
+                self.search_worker.stop()
+                self.search_worker.wait()
 
-            self.search_thread.setParent(None)
-            self.search_thread = None
+            self.search_worker.setParent(None)
+            self.search_worker = None
 
         self.running = False
         self.stop_spinner()
@@ -670,16 +670,16 @@ class FindInFilesWidget(PluginMainWidget):
             self.start()
 
     def stop(self):
-        """Stop find thread."""
-        self._stop_and_reset_thread()
+        """Stop find worker."""
+        self._stop_and_reset_worker()
 
     def start(self):
-        """Start find thread."""
+        """Start find worker."""
         options = self._get_options()
         if options is None:
             return
 
-        self._stop_and_reset_thread(ignore_results=True)
+        self._stop_and_reset_worker(ignore_results=True)
         search_text = self.search_text_edit.currentText()
 
         # Update and set options
@@ -693,22 +693,22 @@ class FindInFilesWidget(PluginMainWidget):
         # Start
         self.running = True
         self.start_spinner()
-        self.search_thread = SearchThread(
+        self.search_worker = SearchWorker(
             None,
             search_text,
             self.text_color,
             self.get_conf('max_results')
         )
-        self.search_thread.sig_finished.connect(self._handle_search_complete)
-        self.search_thread.sig_file_match.connect(
+        self.search_worker.sig_finished.connect(self._handle_search_complete)
+        self.search_worker.sig_file_match.connect(
             self.result_browser.append_file_result
         )
-        self.search_thread.sig_line_match.connect(
+        self.search_worker.sig_line_match.connect(
             self.result_browser.append_result
         )
         self.result_browser.clear_title(search_text)
-        self.search_thread.initialize(*self._get_options())
-        self.search_thread.run()
+        self.search_worker.initialize(*self._get_options())
+        self.search_worker.run()
         self.update_actions()
 
     def add_external_path(self, path):

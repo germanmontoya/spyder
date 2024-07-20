@@ -27,7 +27,7 @@ from spyder.plugins.findinfiles.widgets.combobox import (
     SearchInComboBox,
     SearchInComboBoxItems
 )
-from spyder.plugins.findinfiles.widgets.search_thread import SearchThread
+from spyder.plugins.findinfiles.widgets.search_worker import SearchWorker
 from spyder.utils.palette import SpyderPalette, SpyderPalette
 from spyder.utils.stylesheet import APP_STYLESHEET
 
@@ -257,8 +257,8 @@ def test_truncate_result_with_different_input(findinfiles, qtbot, line_input):
     )
 
     # when
-    thread = SearchThread(None, '', text_color=SpyderPalette.COLOR_TEXT_1)
-    truncated_line = thread.truncate_result(line_input, slice_start,
+    worker = SearchWorker(None, '', text_color=SpyderPalette.COLOR_TEXT_1)
+    truncated_line = worker.truncate_result(line_input, slice_start,
                                             slice_end)
     # then
     assert truncated_line['formatted_text'] == expected_result

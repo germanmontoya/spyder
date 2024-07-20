@@ -4,7 +4,7 @@
 # Licensed under the terms of the MIT License
 # (see spyder/__init__.py for details)
 
-"""Search thread."""
+"""Search Worker."""
 
 # Standard library imports
 import os
@@ -33,10 +33,10 @@ MAX_RESULT_LENGTH = 80
 MAX_NUM_CHAR_FRAGMENT = 40
 
 
-# ---- Thread
+# ---- Worker
 # ----------------------------------------------------------------------------
-class SearchThread(QObject):
-    """Find in files search thread."""
+class SearchWorker(QObject):
+    """Find in files search worker."""
     PYTHON_EXTENSIONS = ['.py', '.pyw', '.pyx', '.ipy', '.pyi', '.pyt']
 
     USEFUL_EXTENSIONS = [
@@ -113,8 +113,7 @@ class SearchThread(QObject):
                 self.worker.start()
         except Exception:
             # Important note: we have to handle unexpected exceptions by
-            # ourselves because they won't be catched by the main thread
-            # (known QThread limitation/bug)
+            # ourselves because they won't be catched by the main worker
             traceback.print_exc()
             self.error_flag = _("Unexpected error: see internal console")
         self.stop()
@@ -433,4 +432,7 @@ class SearchThread(QObject):
         return self.results, self.pathlist, self.total_matches, self.error_flag
 
     def is_running(self):
-        return not self.worker.is_finished()
+        try:
+            return not self.worker.is_finished()
+        except AttributeError:
+            pass
